@@ -8,6 +8,7 @@ from .models import User, Post,Follow
 from rest_framework.generics import CreateAPIView, DestroyAPIView
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 # Create your views here.
 
 class UserRegistrationView(APIView):
@@ -130,3 +131,18 @@ class UnfollowView(DestroyAPIView):
 
         follow_instance.delete()
         return Response({"message": "You have successfully unfollowed the user."}, status=status.HTTP_200_OK)
+
+class FeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        following = Follow.objects.filter(follower=user).values_list('following', flat=True)
+        posts = Post.objects.filter(author__in = list(following) + [user]).order_by('-timestamp')
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        result_page = paginator.paginate_queryset(posts, request)
+
+        serializer = PostSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
