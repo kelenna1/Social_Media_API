@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-22%ou84odiw7qkvy&-j*1n*1do1jp@2r2(m53@oomtcerenf&w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['Social_Media_API.onrender.com', '127.0.0.1']
 
 
 # Application definition
@@ -147,4 +147,4 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION':True,
 }
 
-# ALLOWED_HOSTS = ['Social_Media_API.onrender.com', '127.0.0.1']
+
