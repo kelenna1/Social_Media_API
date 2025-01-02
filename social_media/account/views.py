@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
-from .serializers import UserRegistrationSerializer, UserSerializer, UserProfileSerializer, PostSerializer, FollowSerializer
-from .models import User, Post,Follow
+from .serializers import UserRegistrationSerializer, UserSerializer, UserProfileSerializer, PostSerializer, FollowSerializer,LikeSerializer, CommentSerializer
+from .models import User, Post,Follow, Like, Comment
 from rest_framework.generics import CreateAPIView, DestroyAPIView
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -70,7 +70,7 @@ class PostDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        post = self.get_object(pk,request.user, partial=True)
+        post = self.get_object(pk,request.user, )
         if not post:
             return Response({"detail": "Not authorized to delete this message"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -146,3 +146,59 @@ class FeedView(APIView):
 
         serializer = PostSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
+class LikeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+        if not created:
+            like.delete()  # Toggle functionality
+            return Response({"message": "Like removed"}, status=status.HTTP_200_OK)
+        return Response({"message": "Post liked"}, status=status.HTTP_201_CREATED)
+
+# class CommentView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, pk):
+#         post = Post.objects.get(pk=pk)
+#         serializer = CommentSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(user=request.user, post=post)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def get(self, request, pk):
+#         post = Post.objects.get(pk=pk)
+#         comments = post.comments.all()
+#         serializer = CommentSerializer(comments, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+from rest_framework.exceptions import NotFound
+
+class CommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            raise NotFound("Post not found")
+        
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            # Automatically set user and post when saving
+            serializer.save(user=request.user, post=post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            raise NotFound("Post not found")
+        
+        comments = post.comments.all()  # Assuming a reverse relationship `post.comments`
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
