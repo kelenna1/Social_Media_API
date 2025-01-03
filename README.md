@@ -1,5 +1,3 @@
-# Social_Media_API
-
 # Social Media API
 
 ## Project Overview
