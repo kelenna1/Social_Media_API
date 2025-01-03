@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework import status
 from .serializers import UserRegistrationSerializer, UserSerializer, UserProfileSerializer, PostSerializer, FollowSerializer,LikeSerializer, CommentSerializer
 from .models import User, Post,Follow, Like, Comment
@@ -9,17 +9,44 @@ from rest_framework.generics import CreateAPIView, DestroyAPIView
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 # Create your views here.
 
 class UserRegistrationView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = UserRegistrationSerializer
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response( {"message": "User created succesfully!"}, status=status.HTTP_201_CREATED)
+            user = serializer.save()  # Save the user
+            # Generate tokens for the new user
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "message": "User registered successfully!",
+                "user": {
+                    "username": user.username,
+                    "email": user.email,
+                },
+                "tokens": {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                }
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# class TokenLoginView(APIView):
+#     serializer_class = 
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         user = request.user
+#         return Response({
+#             "message": "Login successful",
+#             "username": user.username,
+#             "email": user.email,
+#         }, status=200)
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -36,7 +63,7 @@ class UserProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class PostListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
         posts = Post.objects.all().order_by('-timestamp')
