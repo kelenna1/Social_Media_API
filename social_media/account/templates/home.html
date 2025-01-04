@@ -9,30 +9,49 @@
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
+            height: 100vh;
             margin: 0;
             padding: 0;
         }
         header {
-            background-color: #007BFF;
+            background-color: #06b354;
             color: white;
             padding: 20px;
         }
+        .links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px auto;
+            width: 80%;
+            max-width: 600px;
+        }
         .links a {
-            display: inline-block;
-            margin: 10px;
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            padding: 10px 20px;
+            margin: 10px 0;
             text-decoration: none;
             color: #007BFF;
             font-weight: bold;
+            background: #fff;
+            border: 2px solid #007BFF;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
         }
         .links a:hover {
-            text-decoration: underline;
+            background-color: #007BFF;
+            color: white;
+            transform: translateY(-3px);
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Welcome to the Social Media API</h1>
-        <p>Explore our API functionalities below!</p>
+        <h2>Welcome to my...</h2><h1> Social Media API</h1>
+        <p>Explore the API functionalities below!</p>
     </header>
     <div class="links">
         <a href="/api/account/register">Register</a>
@@ -40,5 +59,8 @@
         <a href="/api/account/posts">View Posts</a>
         <a href="/api/account/feed">Feed</a>
     </div>
+    <footer>
+        <p>Copyright &copy; Okolie designs</p>
+    </footer>
 </body>
 </html>
