@@ -14,6 +14,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 # Create your views here.
 
 class UserRegistrationView(APIView):
+    #allows all access and doesn't require authnetication
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
 
@@ -35,7 +36,8 @@ class UserRegistrationView(APIView):
                 }
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+#for the landing page   
 def home_view(request):
     return render(request, 'home.html')
     
@@ -50,8 +52,10 @@ def home_view(request):
 #             "username": user.username,
 #             "email": user.email,
 #         }, status=200)
-    
+
+#For the user profile and output   
 class UserProfileView(APIView):
+    #requires authentication for access
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -64,7 +68,8 @@ class UserProfileView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+#CRUD operations for  creating and updating post    
 class PostListCreateView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -80,6 +85,7 @@ class PostListCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#CRUD operations for deleting and details
 class PostDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -92,6 +98,7 @@ class PostDetailView(APIView):
     def put(self, request, pk):
         post = self.get_object(pk, request.user)
         if not post:
+            #allows only on authentication
             return Response({"detail": "Not authorized to update this message"}, status=status.HTTP_403_FORBIDDEN)
         serializer = PostSerializer(post, data=request.data, partial= True)
         if serializer.is_valid():
@@ -117,6 +124,7 @@ class PostDetailView(APIView):
 #             raise ValidationError("You cannot follow yourself")
 #         serializer.save(follower = self.request.user)
 
+#updated the code for the following 
 class FollowView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = FollowSerializer
@@ -146,6 +154,7 @@ class FollowView(CreateAPIView):
 #         follow_instance.delete()
 #         return Response({"message": "You've successfully unfollowed "}, status=status.HTTP_200_OK)
 
+#updated the code for the unfollow adding errors and try and except
 class UnfollowView(DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -207,6 +216,7 @@ class LikeView(APIView):
 
 from rest_framework.exceptions import NotFound
 
+#updated the code for the comment adding the try and except in case of errors
 class CommentView(APIView):
     permission_classes = [IsAuthenticated]
 

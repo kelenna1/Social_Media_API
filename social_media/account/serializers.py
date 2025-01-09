@@ -29,6 +29,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'bio', 'profile_picture']
 
 class PostSerializer(serializers.ModelSerializer):
+    #That the author brings out the username instead of the user id
+    author =serializers.ReadOnlyField(source='author.username')
     class Meta:
         model = Post
         fields= ['id', 'content', 'author', 'timestamp', 'media', ]
